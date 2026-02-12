@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>PROFILE MANAGER</title>
+
+<style>
+*{box-sizing:border-box;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Ubuntu}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:radial-gradient(circle at top,#020617,#000);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  color:#e5e7eb;
+}
+
+/* ONLINE STATUS */
+.status-net{
+  font-size:11px;
+  font-weight:600;
+  display:flex;
+  align-items:center;
+  gap:4px;
+  margin-bottom:25px;
+}
+.dot{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:#ef4444;
+  box-shadow:0 0 12px #ef4444;
+  transition:.3s;
+}
+
+/* CARD */
+.section{
+  width:100%;
+  max-width:760px;
+  background:linear-gradient(180deg,#020617,#000);
+  border-radius:20px;
+  padding:26px;
+  border:2px solid rgba(56,189,248,.25);
+  box-shadow:0 0 40px rgba(56,189,248,.15);
+}
+
+.title{
+  text-align:center;
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:22px;
+  background:linear-gradient(135deg,#38bdf8,#22d3ee,#0ea5e9);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.full{grid-column:1/-1}
+
+label{
+  font-size:12px;
+  color:#94a3b8;
+  margin-bottom:5px;
+  display:block;
+}
+
+input, select{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #1e293b;
+  background:#020617;
+  color:#e5e7eb;
+  outline:none;
+  transition:.2s;
+}
+input:focus, select:focus{
+  border-color:#38bdf8;
+  box-shadow:0 0 0 1px rgba(56,189,248,.35);
+}
+
+textarea{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid #1e293b;
+  background:#020617;
+  color:#e5e7eb;
+  outline:none;
+  transition:.2s;
+  resize:none;
+  min-height:48px;
+  white-space:pre-wrap;
+  word-break:break-word;
+  overflow-wrap:break-word;
+}
+textarea:focus{
+  border-color:#38bdf8;
+  box-shadow:0 0 0 1px rgba(56,189,248,.35);
+}
+
+/* CLEAR BUTTON */
+.field-wrap{position:relative;}
+
+.clear-btn{
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  width:20px;
+  height:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  opacity:.85;
+  transition:.2s ease;
+}
+.clear-btn svg{
+  width:14px;
+  height:14px;
+  stroke:#38bdf8;
+  transition:.2s ease;
+}
+.clear-btn:hover svg{
+  stroke:#22d3ee;
+  filter:drop-shadow(0 0 4px rgba(56,189,248,.7));
+}
+.clear-btn:active{
+  transform:translateY(-50%) scale(.9);
+}
+
+/* BUTTON */
+button{
+  margin-top:22px;
+  width:100%;
+  padding:15px;
+  border-radius:14px;
+  border:none;
+  background:linear-gradient(135deg,#38bdf8,#0ea5e9);
+  color:#020617;
+  font-weight:700;
+  cursor:pointer;
+  transition:.2s;
+}
+button:active{transform:scale(.97)}
+button.loading{
+  opacity:.7;
+  pointer-events:none;
+}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  bottom:30px;
+  left:50%;
+  transform:translateX(-50%) translateY(120%);
+  background:#111827;
+  border:1px solid #1f2937;
+  padding:16px 24px;
+  border-radius:16px;
+  font-size:14px;
+  font-weight:600;
+  opacity:0;
+  transition:.4s ease;
+  z-index:9999;
+}
+.toast.show{
+  transform:translateX(-50%) translateY(0);
+  opacity:1;
+}
+.toast.success{border-color:#22c55e;color:#22c55e;}
+.toast.error{border-color:#ef4444;color:#ef4444;}
+</style>
+</head>
+
+<body>
+
+<section class="section">
+
+  <div class="status-net">
+    <div id="dot" class="dot"></div>
+    <span id="netText">OFFLINE</span>
+  </div>
+
+  <div class="title">PROFILE MANAGER</div>
+
+  <div class="grid">
+
+    <div class="full">
+      <label>API KEY</label>
+      <input id="api" placeholder="Default Source Code API">
+    </div>
+
+<div class="full">
+<label>User Agent Segment</label>
+<textarea id="ua_segment">Android 13; itel S23 Plus Build/TP1A.220624.014</textarea>
+</div>
+
+<div><label>Platform</label><input id="platform" value="Linux armv8l"></div>
+<div><label>Resolution</label><input id="resolution" value="720x1600"></div>
+<div><label>Device Pixel Ratio</label><input id="dpr" type="number" value="2"></div>
+<div><label>Hardware Concurrency</label><input id="cpu" type="number" value="8"></div>
+<div><label>Device Memory</label><input id="ram" type="number" value="4"></div>
+<div><label>Max Touch Points</label><input id="touch" type="number" value="10"></div>
+
+<div class="full">
+<label>WebGL Vendor</label>
+<select id="vendor">
+<option value="Qualcomm">Qualcomm (Adreno)</option>
+<option value="ARM">ARM (Mali)</option>
+<option value="Imagination Technologies">Imagination Technologies (PowerVR)</option>
+</select>
+</div>
+
+<div class="full">
+<label>WebGL Renderer</label>
+<input id="renderer" value="Adreno (TM) 610">
+</div>
+
+</div>
+
+<button id="btn" onclick="createProfile()">Create Profile</button>
+</section>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const DEFAULT_API="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OThjN2U2YWVkZTZhNjI4NDU4MDMwYjMiLCJ0eXBlIjoiZGV2Iiwiand0aWQiOiI2OThjN2ZiODY5MjMxYzcxNDVmYWRiMWMifQ.bM39xAXRzpyK1jN6cdqoP3dOV5cLpf382c07aW0P9Ww";
+
+const SUPA_URL = "https://zxbcwksyekfmraykdjbb.supabase.co";
+const SUPA_KEY = "sb_publishable_GjMW-SLW6du5zPuSlQKDew_LxHQ4WTQ";
+
+const btn=document.getElementById("btn");
+const toast=document.getElementById("toast");
+const vendorSelect=document.getElementById("vendor");
+const rendererInput=document.getElementById("renderer");
+
+/* AUTO RENDERER */
+vendorSelect.addEventListener("change",()=>{
+if(vendorSelect.value==="Qualcomm") rendererInput.value="Adreno (TM) 610";
+else if(vendorSelect.value==="ARM") rendererInput.value="Mali-G57";
+else rendererInput.value="PowerVR GE8320";
+});
+
+/* CLEAR BUTTON SYSTEM */
+function addClearButtons(){
+document.querySelectorAll("input, textarea").forEach(el=>{
+if(el.id==="renderer") return;
+const wrap=document.createElement("div");
+wrap.className="field-wrap";
+el.parentNode.insertBefore(wrap,el);
+wrap.appendChild(el);
+
+const btn=document.createElement("div");
+btn.className="clear-btn";
+btn.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+<line x1="18" y1="6" x2="6" y2="18"/>
+<line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+btn.onclick=(e)=>{e.stopPropagation();el.value="";};
+wrap.appendChild(btn);
+});
+}
+addClearButtons();
+
+function showToast(msg,type){
+toast.className="toast "+type+" show";
+toast.textContent=msg;
+setTimeout(()=>toast.classList.remove("show"),3000);
+}
+
+function updateNet(){
+const online=navigator.onLine;
+dot.style.background=online?"#22c55e":"#ef4444";
+dot.style.boxShadow=`0 0 12px ${online?"#22c55e":"#ef4444"}`;
+netText.textContent=online?"ONLINE":"OFFLINE";
+netText.style.color=online?"#22c55e":"#ef4444";
+}
+window.addEventListener("online",updateNet);
+window.addEventListener("offline",updateNet);
+updateNet();
+
+function rand(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+
+/* ===== GENERATE BASH SCRIPT ===== */
+function generateBash(apiKey,payload){
+return `#!/usr/bin/env bash
+
+API_KEY="${apiKey}"
+
+curl --request POST \\
+  --url https://api.gologin.com/browser/custom \\
+  --header "Authorization: Bearer $API_KEY" \\
+  --header "Content-Type: application/json" \\
+  --data '${JSON.stringify(payload,null,2)}'
+`;
+}
+
+async function getUniqueSafari() {
+  const res = await fetch(`${SUPA_URL}/rest/v1/rpc/get_next_safari`, {
+    method: "POST",
+    headers: {
+      "apikey": SUPA_KEY,
+      "Authorization": "Bearer " + SUPA_KEY,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({})
+  });
+
+  if (!res.ok) throw new Error("Gagal ambil Safari counter");
+
+  const n = await res.json();
+
+  const X = Math.floor(n / 100);
+  const XX = n % 100;
+
+  return `53${X}.${XX.toString().padStart(2,"0")}`;
+}
+function extractModelFromUA(seg) {
+  // Hilangkan ; di akhir kalau ada
+  seg = seg.replace(/;$/, "");
+
+  // Ambil bagian setelah ";"
+  const parts = seg.split(";");
+
+  if (parts.length < 2) return "Android Device";
+
+  // Ambil bagian model
+  const modelPart = parts[1].trim();
+
+  // Hilangkan "Build/xxxx"
+  return modelPart.split("Build/")[0].trim();
+}
+async function createProfile(){
+try{
+btn.classList.add("loading");
+btn.textContent="Creating...";
+
+const apiKey=api.value.trim()||DEFAULT_API;
+let seg=ua_segment.value.trim();
+
+// Jika tidak ada ; di akhir, tambahkan otomatis
+if(!seg.endsWith(";")) seg += ";";
+
+// Validasi tanpa mengharuskan user menulis ;
+if(!/^Android\s.+Build\/.+;$/.test(seg)) throw "Format UA salah";
+const SF = await getUniqueSafari();
+const AI=rand(0,2),AO=rand(0,2),VI=rand(0,2);
+
+const UA=`Mozilla/5.0 (Linux; ${seg}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.7390.54 Safari/${SF}`;
+
+const modelName = extractModelFromUA(seg);
+
+const payload={
+name: modelName,
+notes:"Android no proxy",
+autoLang:true,
+os:"android",
+devicePixelRatio:Number(dpr.value),
+navigator:{
+userAgent:UA,
+resolution:resolution.value,
+language:"id-ID",
+platform:platform.value,
+hardwareConcurrency:Number(cpu.value),
+deviceMemory:Number(ram.value),
+maxTouchPoints:Number(touch.value)
+},
+proxy:{mode:"none"},
+timezone:{enabled:true,fillBasedOnIp:true},
+geolocation:{mode:"prompt",enabled:true,fillBasedOnIp:true},
+audioContext:{mode:"noise"},
+canvas:{mode:"off"},
+fonts:{families:["Roboto","Noto Sans"],enableMasking:true,enableDomRect:true},
+mediaDevices:{videoInputs:VI,audioInputs:AI,audioOutputs:AO,enableMasking:true},
+webRTC:{mode:"disabled",enable:false,isEmptyIceList:true},
+webGL:{mode:"noise"},
+clientRects:{mode:"noise"},
+webGLMetadata:{
+vendor:vendorSelect.value,
+renderer:rendererInput.value,
+mode:"mask"
+},
+chromeExtensions:[],
+userChromeExtensions:[],
+folders:[]
+};
+
+const res=await fetch("https://api.gologin.com/browser/custom",{
+method:"POST",
+headers:{
+"Authorization":"Bearer "+apiKey,
+"Content-Type":"application/json"
+},
+body:JSON.stringify(payload)
+});
+
+const data=await res.json();
+if(!res.ok) throw data;
+
+
+showToast("✔ Profile Created ","success");
+
+/* ===== AUTO DOWNLOAD BASH AFTER SUCCESS ===== */
+const script=generateBash(apiKey,payload);
+const blob=new Blob([script],{type:"text/plain"});
+const link=document.createElement("a");
+link.href=URL.createObjectURL(blob);
+link.download = modelName.replace(/\s+/g,"_") + ".sh";
+link.click();
+}catch(err){
+showToast("❌ "+(err.message||"Check API Key"),"error");
+}finally{
+btn.classList.remove("loading");
+btn.textContent="Create Profile";
+}
+}
+</script>
+
+</body>
+</html>
