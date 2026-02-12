@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Profile Manager</title>
+
+<style>
+*{
+  box-sizing:border-box;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Ubuntu;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:radial-gradient(circle at top,#020617,#000);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:10px;
+  color:#e5e7eb;
+}
+
+/* ONLINE STATUS */
+.status-net{
+  position:fixed;
+  top:10px;
+  left:12px;
+  font-size:11px;
+  font-weight:600;
+  letter-spacing:.3px;
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+
+.dot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:red;
+  box-shadow:0 0 8px red;
+}
+
+/* MAIN BOX */
+.section{
+  width:100%;
+  max-width:720px;
+  background:linear-gradient(180deg,#020617,#000);
+  border-radius:16px;
+  padding:22px 18px;
+  border:1px solid rgba(56,189,248,.25);
+  box-shadow:0 0 40px rgba(56,189,248,.15);
+}
+
+/* MOBILE FULLSCREEN */
+@media(max-width:768px){
+  body{padding:0;}
+  .section{
+    min-height:100vh;
+    border-radius:0;
+    border:none;
+    box-shadow:none;
+  }
+}
+
+/* TITLE */
+.title{
+  text-align:center;
+  font-size:22px;
+  font-weight:700;
+  margin-bottom:18px;
+  background:linear-gradient(135deg,#38bdf8,#22d3ee,#0ea5e9);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-shadow:0 0 14px rgba(56,189,248,.35);
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.full{grid-column:1/-1;}
+
+label{
+  font-size:12px;
+  color:#94a3b8;
+  margin-bottom:4px;
+  display:block;
+}
+
+input{
+  width:100%;
+  padding:11px 12px;
+  border-radius:11px;
+  border:1px solid #1e293b;
+  background:#020617;
+  color:#e5e7eb;
+  outline:none;
+}
+
+input:focus{
+  border-color:#38bdf8;
+  box-shadow:0 0 0 1px rgba(56,189,248,.35);
+}
+
+.ua-wrap{
+  font-size:11px;
+  color:#64748b;
+  margin-bottom:6px;
+}
+
+/* BUTTON */
+button{
+  margin-top:18px;
+  width:100%;
+  padding:14px;
+  border-radius:13px;
+  border:none;
+  background:linear-gradient(135deg,#38bdf8,#0ea5e9);
+  color:#020617;
+  font-weight:700;
+  letter-spacing:.3px;
+  cursor:pointer;
+}
+
+button:active{transform:scale(.98);}
+
+/* TOAST */
+.toast{
+  position:fixed;
+  bottom:26px;
+  left:50%;
+  transform:translateX(-50%) translateY(20px);
+  background:#020617;
+  padding:12px 18px;
+  border-radius:14px;
+  font-size:13px;
+  opacity:0;
+  pointer-events:none;
+  transition:.35s ease;
+  border:1px solid #1e293b;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
+}
+
+.toast.success{
+  border-color:#22c55e;
+  box-shadow:0 0 15px rgba(34,197,94,.6);
+}
+
+.toast.error{
+  border-color:#ef4444;
+  box-shadow:0 0 15px rgba(239,68,68,.6);
+}
+</style>
+</head>
+
+<body>
+
+<div class="status-net">
+  <div id="dot" class="dot"></div>
+  <span id="netText">OFFLINE</span>
+</div>
+
+<section class="section">
+
+  <div class="title">Profile Manager</div>
+
+  <div class="grid">
+
+    <div class="full">
+      <label>API KEY</label>
+      <input id="api" placeholder="Kosong = default API publik">
+    </div>
+
+    <div class="full">
+      <label>User Agent Segment (Editable Only)</label>
+      <div class="ua-wrap">
+        Mozilla/5.0 (Linux; <b>[editable]</b> ) AppleWebKit/537.36 ...
+      </div>
+      <input id="ua_segment" value="Android 12; vivo Y20 Build/SP1A.210812.003;">
+    </div>
+
+    <div><label>Platform</label><input id="platform" value="Linux armv8l"></div>
+    <div><label>Resolution</label><input id="resolution" value="720x1600"></div>
+    <div><label>Device Pixel Ratio</label><input id="dpr" type="number" value="2"></div>
+    <div><label>Hardware Concurrency</label><input id="cpu" type="number" value="8"></div>
+    <div><label>Device Memory (GB)</label><input id="ram" type="number" value="4"></div>
+    <div><label>Max Touch Points</label><input id="touch" type="number" value="10"></div>
+    <div><label>WebGL Vendor</label><input id="vendor" value="Qualcomm"></div>
+    <div><label>WebGL Renderer</label><input id="renderer" value="Adreno (TM) 610"></div>
+
+  </div>
+
+  <button onclick="createProfile()">Create Profile</button>
+
+</section>
+
+<div id="toast" class="toast"></div>
+
+<script>
+const DEFAULT_API="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
+
+function updateNet(){
+  const online=navigator.onLine;
+  dot.style.background=online?"#22c55e":"#ef4444";
+  dot.style.boxShadow=`0 0 10px ${online?"#22c55e":"#ef4444"}`;
+  netText.textContent=online?"ONLINE":"OFFLINE";
+  netText.style.color=online?"#22c55e":"#ef4444";
+}
+window.addEventListener("online",updateNet);
+window.addEventListener("offline",updateNet);
+updateNet();
+
+function showToast(msg,type="success"){
+  const toast=document.getElementById("toast");
+  toast.textContent=msg;
+  toast.className=`toast show ${type}`;
+  setTimeout(()=>toast.className="toast",2400);
+}
+
+function buildUA(){
+  const seg=ua_segment.value.trim();
+  if(!seg.startsWith("Android")||!seg.endsWith(";"))
+    throw "Format wajib: Android X; Brand Model Build/XXXX;";
+  return `Mozilla/5.0 (Linux; ${seg}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.6668.101 Safari/537.36`;
+}
+
+async function createProfile(){
+  try{
+    const UA=buildUA();
+    const apiKey=api.value.trim()||DEFAULT_API;
+
+    const payload={
+      name:"Android "+Date.now(),
+      os:"android",
+      navigator:{
+        userAgent:UA,
+        resolution:resolution.value,
+        platform:platform.value,
+        hardwareConcurrency:Number(cpu.value),
+        deviceMemory:Number(ram.value),
+        maxTouchPoints:Number(touch.value)
+      },
+      webGLMetadata:{vendor:vendor.value,renderer:renderer.value,mode:"mask"}
+    };
+
+    const res=await fetch("https://api.gologin.com/browser/custom",{
+      method:"POST",
+      headers:{
+        "Authorization":"Bearer "+apiKey,
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(payload)
+    });
+
+    if(res.ok){
+      showToast("Profile berhasil dibuat","success");
+    }else{
+      showToast("Gagal membuat profile","error");
+    }
+
+  }catch(e){
+    showToast(e,"error");
+  }
+}
+</script>
+
+</body>
+</html>
