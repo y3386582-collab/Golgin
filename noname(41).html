@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Fingerprint Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<h2>Test Insert Supabase</h2>
+<button onclick="kirimData()">Kirim Data</button>
+
+<script>
+  const supabaseUrl = "https://bnjvyzadnidjkcmqbraz.supabase.co";
+  const supabaseKey = "sb_publishable__T9R2XBw_L-ts6UL2aLZ-g_X1QGf5ne";
+
+  const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+  async function kirimData() {
+    const { data, error } = await supabase
+      .from("fingerprint_store")
+      .insert([
+        {
+          wk: "wk_test",
+          sf: "sf_test",
+          ai: 10,
+          ao: 20,
+          vi: 30
+        }
+      ]);
+
+    if (error) {
+      alert("ERROR: " + error.message);
+      console.log(error);
+    } else {
+      alert("BERHASIL INSERT!");
+      console.log(data);
+    }
+  }
+</script>
+
+</body>
+</html>
