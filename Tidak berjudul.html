@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Canvas Spoof Advanced Test</title>
+<style>
+body { font-family: monospace; padding:20px; }
+.box { margin-bottom:20px; padding:10px; border:1px solid #ccc; }
+.ok { color:green; }
+.bad { color:red; }
+</style>
+</head>
+<body>
+
+<h2>Canvas & OffscreenCanvas Test</h2>
+
+<div class="box">
+<b>toDataURL Hash:</b>
+<div id="hash1"></div>
+</div>
+
+<div class="box">
+<b>getImageData Hash:</b>
+<div id="hash2"></div>
+</div>
+
+<div class="box">
+<b>OffscreenCanvas Hash:</b>
+<div id="hash3"></div>
+</div>
+
+<div class="box">
+<b>Consistency Check (5 runs):</b>
+<div id="consistency"></div>
+</div>
+
+<script>
+function simpleHash(str) {
+    let h = 0;
+    for (let i = 0; i < str.length; i++) {
+        h = Math.imul(31, h) + str.charCodeAt(i) | 0;
+    }
+    return (h >>> 0).toString(16);
+}
+
+function renderToContext(ctx) {
+    ctx.textBaseline = "top";
+    ctx.font = "16px Arial";
+    ctx.fillStyle = "#f60";
+    ctx.fillRect(50, 50, 100, 50);
+    ctx.fillStyle = "#069";
+    ctx.fillText("CanvasFingerprintTest", 10, 10);
+}
+
+function testNormalCanvas() {
+    const canvas = document.createElement("canvas");
+    canvas.width = 300;
+    canvas.height = 150;
+    const ctx = canvas.getContext("2d");
+    renderToContext(ctx);
+
+    const dataUrlHash = simpleHash(canvas.toDataURL());
+    document.getElementById("hash1").innerText = dataUrlHash;
+
+    const imgData = ctx.getImageData(0,0,300,150);
+    const imgHash = simpleHash(String(imgData.data));
+    document.getElementById("hash2").innerText = imgHash;
+
+    return dataUrlHash;
+}
+
+function testOffscreenCanvas() {
+
+    if (typeof OffscreenCanvas === "undefined") {
+        document.getElementById("hash3").innerHTML =
+            "<span class='bad'>OffscreenCanvas NOT supported</span>";
+        return null;
+    }
+
+    const off = new OffscreenCanvas(300,150);
+    const ctx = off.getContext("2d");
+    renderToContext(ctx);
+
+    return off.convertToBlob().then(blob => {
+        return new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const hash = simpleHash(reader.result);
+                document.getElementById("hash3").innerText = hash;
+                resolve(hash);
+            };
+            reader.readAsDataURL(blob);
+        });
+    });
+}
+
+async function runTest() {
+
+    const normalHash = testNormalCanvas();
+
+    let offscreenHash = await testOffscreenCanvas();
+
+    let results = [];
+    for (let i=0;i<5;i++) {
+        const c = document.createElement("canvas");
+        c.width = 300;
+        c.height = 150;
+        const ctx = c.getContext("2d");
+        renderToContext(ctx);
+        results.push(simpleHash(c.toDataURL()));
+    }
+
+    const stable = results.every(v => v === results[0]);
+
+    document.getElementById("consistency").innerHTML =
+        results.join(" | ") +
+        "<br>All equal: " +
+        (stable ? "<span class='ok'>true</span>" :
+                  "<span class='bad'>false</span>");
+}
+
+runTest();
+</script>
+
+</body>
+</html>
